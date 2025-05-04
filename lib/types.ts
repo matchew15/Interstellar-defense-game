@@ -16,6 +16,42 @@ export interface GameState {
   difficulty: "easy" | "normal" | "hard"
   gameOver: boolean
   paused: boolean
+  laserWeapon: LaserWeapon
+  gameSpeed: number
+  showLaserUpgradeUI: boolean
+  scanner: Scanner
+}
+
+export interface Scanner {
+  active: boolean
+  cooldown: number
+  lastUsed: number
+  range: number
+  energyCost: number
+  scannedEnemies: string[]
+  level: number
+}
+
+export interface LaserWeapon {
+  damage: number
+  cooldown: number
+  lastFired: number
+  isAiming: boolean
+  aimTarget: Vector3 | null
+  level: number
+  energyCost: number
+  range: number
+  beamWidth: number
+  accuracy: number
+  upgrades: LaserUpgrades
+}
+
+export interface LaserUpgrades {
+  damage: number
+  cooldown: number
+  energyEfficiency: number
+  range: number
+  beamWidth: number
 }
 
 export interface Enemy {
@@ -28,6 +64,9 @@ export interface Enemy {
   behavior: "direct" | "evasive" | "flanking" | "swarming" | "kamikaze"
   lastAttackTime?: number
   attackCooldown?: number
+  laserResistance?: number
+  scanned?: boolean
+  scanProgress?: number
 }
 
 export interface Asteroid {
@@ -50,6 +89,7 @@ export interface TechTree {
   turretDamage: number
   shieldStrength: number
   resourceGathering: number
+  laserPower: number
 }
 
 export interface Vector3 {
