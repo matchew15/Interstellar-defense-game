@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
+  swcMinify: true,
+  // Ensure output is set to export for static deployments if needed
+  // output: 'export',
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -9,6 +13,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;
