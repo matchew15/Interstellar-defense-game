@@ -12,12 +12,16 @@ import {
   Sparkles,
   Crosshair,
   ZapOff,
+  FastForward,
+  RotateCcw,
   Settings,
   Scan,
   Database,
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useMobile } from "@/hooks/use-mobile"
+import { Slider } from "@/components/ui/slider"
+import EnemyResistanceInfo from "@/components/enemy-resistance-info"
 
 interface GameControlsProps {
   gameState: GameState
@@ -68,7 +72,8 @@ export default function GameControls({
   const [scannerCooldown, setScannerCooldown] = useState(0)
 
   // Extract needed properties from gameState
-  const { enemies, planetHealth, resources, asteroids, techTree, laserWeapon, gameSpeed, paused, gameOver, scanner } = gameState
+  const { enemies, planetHealth, resources, asteroids, techTree, laserWeapon, gameSpeed, paused, gameOver, scanner } =
+    gameState
 
   // Update scanner cooldown
   useEffect(() => {
@@ -333,4 +338,146 @@ export default function GameControls({
                     <span className="text-[10px] text-blue-400">Defense AI</span>
                   </div>
                   <p className="text-[10px]">Target: Enemy #{optimalTargets[0].split("-")[1]}</p>
-                \
+                </div>
+              )}
+
+              {/* Add the enemy resistance info component */}
+              <EnemyResistanceInfo />
+            </div>
+          )}
+
+          {activeTab === "upgrades" && (
+            <div className="space-y-2">
+              <Button
+                onClick={() => onUpgradeTech("turretDamage")}
+                className="w-full bg-yellow-700 hover:bg-yellow-600 justify-between text-xs py-1 h-auto"
+                disabled={resources < upgradeCost || gameStatus !== "playing"}
+              >
+                <span>Turret Dmg (Lvl {techTree.turretDamage})</span>
+                <span>{upgradeCost}</span>
+              </Button>
+              <Button
+                onClick={() => onUpgradeTech("shieldStrength")}
+                className="w-full bg-yellow-700 hover:bg-yellow-600 justify-between text-xs py-1 h-auto"
+                disabled={resources < upgradeCost || gameStatus !== "playing"}
+              >
+                <span>Shield (Lvl {techTree.shieldStrength})</span>
+                <span>{upgradeCost}</span>
+              </Button>
+              <Button
+                onClick={() => onUpgradeTech("resourceGathering")}
+                className="w-full bg-yellow-700 hover:bg-yellow-600 justify-between text-xs py-1 h-auto"
+                disabled={resources < upgradeCost || gameStatus !== "playing"}
+              >
+                <span>Mining (Lvl {techTree.resourceGathering})</span>
+                <span>{upgradeCost}</span>
+              </Button>
+              <Button
+                onClick={onUpgradeLaser}
+                className="w-full bg-red-700 hover:bg-red-600 justify-between text-xs py-1 h-auto"
+                disabled={resources < laserUpgradeCost || gameStatus !== "playing"}
+              >
+                <span>Laser (Lvl {laserWeapon.level})</span>
+                <span>{laserUpgradeCost}</span>
+              </Button>
+              <Button
+                onClick={onUpgradeScanner}
+                className="w-full bg-cyan-700 hover:bg-cyan-600 justify-between text-xs py-1 h-auto"
+                disabled={resources < scannerUpgradeCost || gameStatus !== "playing"}
+              >
+                <span>Scanner (Lvl {scanner.level})</span>
+                <span>{scannerUpgradeCost}</span>
+              </Button>
+            </div>
+          )}
+
+          {activeTab === "resources" && (
+            <div className="space-y-1 max-h-32 overflow-y-auto">
+              {asteroids.map((asteroid) => (
+                <Button
+                  key={asteroid.id}
+                  onClick={() => onMineAsteroid(asteroid.id)}
+                  className="w-full bg-gray-700 hover:bg-gray-600 justify-between text-xs py-1 h-auto"
+                  disabled={asteroid.resources <= 0 || gameStatus !== "playing"}
+                >
+                  <span>Asteroid #{asteroid.id}</span>
+                  <span>{asteroid.resources}</span>
+                </Button>
+              ))}
+            </div>
+          )}
+
+          {activeTab === "settings" && (
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-gray-300 block mb-1">Game Speed: {gameSpeed.toFixed(1)}x</label>
+                <div className="flex items-center gap-2">
+                  <RotateCcw className="h-3 w-3 text-gray-400" />
+                  <Slider
+                    value={[gameSpeed]}
+                    min={0.5}
+                    max={2}
+                    step={0.1}
+                    onValueChange={(value) => onSetGameSpeed(value[0])}
+                    disabled={gameStatus !== "playing"}
+                    className="flex-1"
+                  />
+                  <FastForward className="h-3 w-3 text-gray-400" />
+                </div>
+              </div>
+              <Button
+                onClick={onToggleLaserAim}
+                className={`w-full ${
+                  laserWeapon.isAiming ? "bg-red-900" : "bg-red-700"
+                } hover:bg-red-600 text-xs py-1 h-auto`}
+                disabled={gameStatus !== "playing"}
+              >
+                {laserWeapon.isAiming ? (
+                  <>
+                    <ZapOff className="mr-1 h-3 w-3" />
+                    Exit Targeting Mode
+                  </>
+                ) : (
+                  <>
+                    <Crosshair className="mr-1 h-3 w-3" />
+                    Enter Targeting Mode
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={onToggleScanner}
+                className={`w-full ${
+                  scanner.active ? "bg-cyan-900" : "bg-cyan-700"
+                } hover:bg-cyan-600 text-xs py-1 h-auto`}
+                disabled={
+                  (scanner.active ? false : resources < scannerCost || scannerCooldownRemaining > 0) ||
+                  gameStatus !== "playing"
+                }
+              >
+                {scanner.active ? (
+                  <>
+                    <ZapOff className="mr-1 h-3 w-3" />
+                    Deactivate Scanner
+                  </>
+                ) : (
+                  <>
+                    <Scan className="mr-1 h-3 w-3" />
+                    Activate Scanner
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={onViewScannerResults}
+                className="w-full bg-cyan-700 hover:bg-cyan-600 text-xs py-1 h-auto"
+                disabled={scanner.scannedEnemies.length === 0 || gameStatus !== "playing"}
+              >
+                <Database className="mr-1 h-3 w-3" />
+                View Scanner Results
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
